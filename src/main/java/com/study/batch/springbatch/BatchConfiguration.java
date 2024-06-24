@@ -23,9 +23,10 @@ public class BatchConfiguration {
     private final PlatformTransactionManager transactionManager;
 
     @Bean
-    public Job importUserJob(Step step1, JobExecutionListener listener) {
+    public Job importUserJob(Step step1, Step step2, JobExecutionListener listener) {
         return new JobBuilder("importUserJob", jobRepository)
                 .start(step1)
+                .next(step2)
                 .listener(listener)
                 .build();
     }
@@ -39,13 +40,35 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Tasklet tasklet(PersonRepository personRepository) {
+    public Step step2(Tasklet tasklet2) {
+        return new StepBuilder("step2", jobRepository)
+                .tasklet(tasklet2, transactionManager)
+                .allowStartIfComplete(true)
+                .build();
+    }
+
+    @Bean
+    public Tasklet tasklet1(PersonRepository personRepository) {
         return (contribution, chunkContext) -> {
             personRepository.save(new Person("John", "Doe"));
             personRepository.save(new Person("Jane", "Smith"));
 
             personRepository.findAll().forEach(person ->
                     System.out.println("Found: " + person.getFirstName() + " " + person.getLastName())
+            );
+
+            return RepeatStatus.FINISHED;
+        };
+    }
+
+    @Bean
+    public Tasklet tasklet2(PersonRepository personRepository) {
+        return (contribution, chunkContext) -> {
+            personRepository.save(new Person("Alice", "Johnson"));
+            personRepository.save(new Person("Bob", "Brown"));
+
+            personRepository.findAll().forEach(person ->
+                    System.out.println("Processed: " + person.getFirstName() + " " + person.getLastName())
             );
 
             return RepeatStatus.FINISHED;
