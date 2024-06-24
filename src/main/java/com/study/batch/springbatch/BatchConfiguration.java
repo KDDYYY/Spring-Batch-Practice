@@ -34,18 +34,16 @@ public class BatchConfiguration {
     public Step step1(Tasklet tasklet) {
         return new StepBuilder("step1", jobRepository)
                 .tasklet(tasklet, transactionManager)
-                .allowStartIfComplete(true) // 이 설정을 추가하여 Step이 완료된 후에도 다시 시작할 수 있도록 합니다.
+                .allowStartIfComplete(true)
                 .build();
     }
 
     @Bean
     public Tasklet tasklet(PersonRepository personRepository) {
         return (contribution, chunkContext) -> {
-            // 새로운 Person 객체를 생성하여 저장
             personRepository.save(new Person("John", "Doe"));
             personRepository.save(new Person("Jane", "Smith"));
 
-            // 모든 Person 객체를 조회하여 출력
             personRepository.findAll().forEach(person ->
                     System.out.println("Found: " + person.getFirstName() + " " + person.getLastName())
             );
