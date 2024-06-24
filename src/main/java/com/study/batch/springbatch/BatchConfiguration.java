@@ -32,9 +32,9 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Step step1(Tasklet tasklet) {
+    public Step step1(Tasklet tasklet1) {
         return new StepBuilder("step1", jobRepository)
-                .tasklet(tasklet, transactionManager)
+                .tasklet(tasklet1, transactionManager)
                 .allowStartIfComplete(true)
                 .build();
     }
